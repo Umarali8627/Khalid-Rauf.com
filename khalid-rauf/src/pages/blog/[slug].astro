@@ -1,0 +1,71 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getAllPosts, getPostBySlug } from '../../services/posts';
+import { decodeHtmlEntities, formatDate, readingTime, stripHtml } from '../../lib/helpers';
+import '../../styles/pages/blog.css';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug }, // already normalized (decoded) in mapPost
+  }));
+}
+
+// Defensive: decode the incoming param too, in case it arrives encoded
+let { slug } = Astro.params;
+try {
+  if (slug && /%[0-9A-Fa-f]{2}/.test(slug)) {
+    slug = decodeURIComponent(slug);
+  }
+} catch {
+  // leave as-is if malformed
+}
+
+const post = await getPostBySlug(slug!);
+
+if (!post) {
+  return Astro.redirect('/blog');
+}
+
+const decodedTitle = decodeHtmlEntities(post.title);
+const minutes = readingTime(post.content);
+---
+
+<MainLayout title={decodedTitle} description={stripHtml(post.excerpt).slice(0, 155)}>
+  <section class="section">
+    <div class="container">
+      <div class="article-content" dir={/[\u0600-\u06FF]/.test(decodedTitle) ? 'rtl' : 'ltr'}>
+        <p style="margin-bottom: var(--space-md); font-size: 0.85rem; color: var(--color-text-muted);">
+          <a href="/" style="color: inherit;">Home</a> /
+          <a href="/blog" style="color: inherit;">Blog</a> /
+          <span style="color: var(--color-text-primary);">{decodedTitle}</span>
+        </p>
+
+        {post.categories.length > 0 && (
+          <span class="eyebrow">{post.categories[0]}</span>
+        )}
+        <h1>{decodedTitle}</h1>
+
+        <div class="article-meta">
+          {post.author && <span>By {post.author}</span>}
+          <span>•</span>
+          <span>{formatDate(post.date)}</span>
+          <span>•</span>
+          <span>{minutes} min read</span>
+        </div>
+
+        {post.featuredImage && (
+          <img
+            src={post.featuredImage}
+            alt={post.featuredImageAlt || decodedTitle}
+            class="article-featured-image"
+            referrerpolicy="no-referrer"
+            onerror="this.style.display='none'"
+          />
+        )}
+
+        <div set:html={post.content} />
+      </div>
+    </div>
+  </section>
+</MainLayout>

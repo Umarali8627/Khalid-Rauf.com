@@ -1,0 +1,61 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  breadcrumb?: string;
+}
+
+const { eyebrow, title, description, breadcrumb } = Astro.props;
+---
+
+<section class="page-hero">
+  <div class="container page-hero__inner">
+    {breadcrumb && (
+      <p class="page-hero__breadcrumb">
+        <a href="/">Home</a> <span>/</span> {breadcrumb}
+      </p>
+    )}
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1 class="page-hero__title">{title}</h1>
+    {description && <p class="page-hero__desc">{description}</p>}
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    background-color: var(--color-green);
+    padding: var(--space-xl) 0 var(--space-lg);
+    padding-left: 3%;
+  }
+
+  .page-hero__inner {
+    max-width: 720px;
+  }
+
+  .page-hero__breadcrumb {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: var(--space-sm);
+  }
+  .page-hero__breadcrumb a {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .page-hero__breadcrumb a:hover {
+    color: var(--color-gold);
+  }
+  .page-hero__breadcrumb span {
+    margin: 0 4px;
+  }
+
+  .page-hero__title {
+    color: #fff;
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-hero__desc {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1.05rem;
+    margin-bottom: 0;
+  }
+</style>

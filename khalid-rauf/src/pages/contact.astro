@@ -1,0 +1,101 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import Button from '../components/ui/Button.astro';
+import '../styles/pages/contact.css';
+
+const contactInfo = [
+  {
+    title: 'Email',
+    value: 'contact@khalidrauf.com',
+    icon: 'M4 4h16v16H4z M22 6l-10 7L2 6',
+  },
+  {
+    title: 'Phone',
+    value: '+1 (000) 000-0000',
+    icon: 'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z',
+  },
+  {
+    title: 'Location',
+    value: 'Available for events and interviews worldwide',
+    icon: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z M12 13a3 3 0 100-6 3 3 0 000 6z',
+  },
+];
+---
+
+<MainLayout
+  title="Contact"
+  description="Get in touch with Khalid Rauf Qureshi for speaking engagements, media, or general inquiries."
+>
+  <PageHero
+    eyebrow="Get in Touch"
+    title="Contact"
+    description="Have a question, invitation, or collaboration idea? Reach out below."
+    breadcrumb="Contact"
+  />
+
+  <section class="section">
+    <div class="container contact-grid">
+      <div>
+        <h2>Let's Connect</h2>
+        <p style="margin-bottom: var(--space-lg);">
+          Whether it's for a speaking engagement, media interview, book
+          collaboration, or just to share your thoughts — I'd love to hear
+          from you.
+        </p>
+
+        {contactInfo.map((item) => (
+          <div class="contact-info__item">
+            <div class="contact-info__icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d={item.icon}></path>
+              </svg>
+            </div>
+            <div>
+              <h4>{item.title}</h4>
+              <p>{item.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <form class="contact-form" id="contactForm">
+        <div class="contact-form__group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="contact-form__group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="contact-form__group">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" required />
+        </div>
+        <div class="contact-form__group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+
+        <Button type="submit" variant="primary" full>Send Message</Button>
+
+        <p class="contact-form__status" id="formStatus"></p>
+      </form>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  // Placeholder submit handler — wire this up to a WP Contact Form 7 endpoint
+  // (visible in your REST route dump as /contact-form-7/v1/contact-forms/{id}/feedback)
+  // or a custom form-handling API route once ready.
+  const form = document.getElementById('contactForm') as HTMLFormElement;
+  const status = document.getElementById('formStatus') as HTMLElement;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    status.textContent = 'Thank you! Your message has been noted. (Form submission not yet connected to backend.)';
+    status.className = 'contact-form__status success';
+    form.reset();
+  });
+</script>

@@ -1,0 +1,21 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Hero from '../components/home/Hero.astro';
+import FeaturedBooks from '../components/home/FeaturedBooks.astro';
+import AboutPreview from '../components/home/AboutPreview.astro';
+import LatestArticles from '../components/home/LatestArticles.astro';
+import QuoteSection from '../components/home/QuoteSection.astro';
+import Newsletter from '../components/home/Newsletter.astro';
+---
+
+<MainLayout
+  title="Home"
+  description="Khalid Rauf Qureshi — Writer, poet, thinker, and leader exploring literature, politics, philosophy, and society."
+>
+  <Hero />
+  <FeaturedBooks />
+  <AboutPreview />
+  <LatestArticles />
+  <QuoteSection />
+  <Newsletter />
+</MainLayout>

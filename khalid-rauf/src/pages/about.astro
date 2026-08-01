@@ -1,0 +1,121 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Timeline from '../components/about/Timeline.astro';
+import { getPageBySlug } from '../services/pages';
+import '../styles/pages/about.css';
+
+// Optional: pulls an "about" WP page for the intro paragraph, if one exists.
+// Falls back to hardcoded content if the page doesn't exist in WordPress yet.
+const aboutPage = await getPageBySlug('about');
+
+const values = [
+  {
+    title: 'Writer',
+    desc: 'Expressing ideas through poetry, prose and thought-provoking books.',
+    icon: 'M12 19l7-7 3 3-7 7-3-3z M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z M2 2l7.586 7.586 M11 13a2 2 0 104 0 2 2 0 00-4 0z',
+  },
+  {
+    title: 'Political Thinker',
+    desc: 'Advocating for responsible governance, unity and economic prosperity.',
+    icon: 'M3 21h18 M5 21V7l8-4v18 M19 21V11l-6-4',
+  },
+  {
+    title: 'Public Intellectual',
+    desc: 'Exploring philosophy, religion and the human condition.',
+    icon: 'M4 19.5A2.5 2.5 0 016.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z',
+  },
+  {
+    title: 'Community Leader',
+    desc: 'Working for social harmony, education and community development.',
+    icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75',
+  },
+];
+
+const timelineItems = [
+  { era: '1970s', description: 'Early fascination with literature and philosophy.' },
+  { era: '1990s', description: 'Began writing poetry and prose in Urdu and English.' },
+  { era: 'Mid 1990s', description: 'Started publishing literary work and presenting it in public.' },
+  { era: '2000s', description: 'Active in political and social campaigns for national unity and prosperity.' },
+  { era: '2010s – Present', description: 'Published numerous books and continues to write, speak and mentor.' },
+];
+
+const stats = [
+  { value: '12+', label: 'Books Published' },
+  { value: '30+', label: 'Years of Writing' },
+  { value: '100+', label: 'Poems Written' },
+  { value: 'Thousands', label: 'Readers Impacted' },
+];
+---
+
+<MainLayout
+  title="About"
+  description="Learn about Khalid Rauf Qureshi's life, work, and journey as a writer, thinker, and leader."
+>
+  <section class="about-hero">
+    <div class="container about-hero__grid">
+      <img
+        src="/images/hero_2.png"
+        alt="Khalid Rauf Qureshi"
+        class="about-hero__image"
+      />
+      <div class="about-hero__content">
+        <span class="eyebrow">About Khalid Rauf Qureshi</span>
+        <h1>A Life of Words, Ideas, and Service</h1>
+        <p set:html={aboutPage?.excerpt || 'Khalid Rauf Qureshi is an author, poet, political thinker and community leader whose work spans literature, politics, philosophy and social thought.'} />
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="about-values">
+      {values.map((v) => (
+        <div class="about-value">
+          <div class="about-value__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d={v.icon}></path>
+            </svg>
+          </div>
+          <h4>{v.title}</h4>
+          <p>{v.desc}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="about-content-grid">
+      <div>
+        <h2 id="life">Life Journey</h2>
+        <Timeline items={timelineItems} />
+      </div>
+
+      <div>
+        <h2>At a Glance</h2>
+        <div class="stats-grid">
+          {stats.map((s) => (
+            <div class="stat-card">
+              <p class="stat-card__value">{s.value}</p>
+              <p class="stat-card__label">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {aboutPage?.content && (
+    <section class="section section-alt">
+      <div class="container">
+        <div class="article-content" set:html={aboutPage.content} />
+      </div>
+    </section>
+  )}
+
+  <section class="quote-section">
+    <div class="container">
+      <div class="quote-box">
+        <div class="quote-box__mark">“</div>
+        <p>Words can shape thought, and thought can shape nations.</p>
+        <p class="quote-box__author">— Khalid Rauf Qureshi</p>
+      </div>
+    </div>
+  </section>
+</MainLayout>

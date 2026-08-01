@@ -1,0 +1,38 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import Button from '../components/ui/Button.astro';
+import { getPageBySlug } from '../services/pages';
+import '../styles/pages/blog.css';
+
+const campaignPage = await getPageBySlug('campaign');
+---
+
+<MainLayout
+  title="Campaign"
+  description="Khalid Rauf Qureshi's campaign for social and political change."
+>
+  <PageHero
+    eyebrow="The Campaign"
+    title={campaignPage ? campaignPage.title : 'Building a Better Tomorrow'}
+    description="Advocating for unity, education, and responsible governance in service of the community."
+    breadcrumb="Campaign"
+  />
+
+  <section class="section">
+    <div class="container">
+      {campaignPage?.content ? (
+        <div class="article-content" set:html={campaignPage.content} />
+      ) : (
+        <div class="article-content text-center">
+          <p>
+            Campaign details are being added. Please check back soon, or
+            create a WordPress page with the slug <code>campaign</code> to
+            populate this section.
+          </p>
+          <Button href="/contact" variant="primary">Get Involved</Button>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>

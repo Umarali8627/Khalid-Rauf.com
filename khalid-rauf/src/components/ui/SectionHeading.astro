@@ -1,0 +1,79 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  align?: 'left' | 'center';
+  light?: boolean;
+}
+
+const { eyebrow, title, align = 'left', light = false } = Astro.props;
+---
+
+<div class={`section-heading section-heading--${align}`}>
+  <div class="section-heading__text">
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h2 class:list={[light ? 'section-heading__title--light' : '']}>{title}</h2>
+  </div>
+  {Astro.slots.has('default') && (
+    <div class="section-heading__action">
+      <slot />
+    </div>
+  )}
+</div>
+
+<style>
+  .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    padding-left: 3%;
+  }
+
+  .section-heading--center {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .section-heading__text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section-heading h2 {
+    margin: 0;
+  }
+
+  /* .section-heading__title--light {
+    color: #fff;
+  } */
+
+  .section-heading__action {
+    flex-shrink: 0;
+  }
+
+  .section-heading__action a {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-green);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .section-heading__action a:hover {
+    color: var(--color-gold);
+  }
+
+  @media (max-width: 600px) {
+    .section-heading {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+  }
+</style>

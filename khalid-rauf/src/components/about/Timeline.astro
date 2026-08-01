@@ -1,0 +1,21 @@
+---
+export interface TimelineItem {
+  era: string;
+  description: string;
+}
+
+export interface Props {
+  items: TimelineItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="timeline">
+  {items.map((item) => (
+    <div class="timeline__item">
+      <p class="timeline__era">{item.era}</p>
+      <p class="timeline__desc">{item.description}</p>
+    </div>
+  ))}
+</div>

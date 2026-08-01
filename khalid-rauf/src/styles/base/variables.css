@@ -1,0 +1,53 @@
+:root {
+  /* Backgrounds */
+  --color-bg-primary: #F7F1E7;
+  --color-bg-secondary: #EFE5D5;
+  --color-bg-card: #FFFFFF;
+
+  /* Text */
+  --color-text-primary: #232323;
+  --color-text-secondary: #666666;
+  --color-text-muted: #8C8C8C;
+
+  /* Brand */
+  --color-green: #18352D;
+  --color-green-hover: #275245;
+  --color-gold: #B58B47;
+  --color-gold-hover: #9E7738;
+
+  /* States */
+  --color-border: #DDD5C8;
+  --color-success: #3F7D4D;
+  --color-warning: #C69026;
+  --color-error: #C64646;
+
+  /* Footer */
+  --color-footer: #11231D;
+
+  /* Typography */
+  --font-heading: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-urdu: 'Noto Nastaliq Urdu', serif;
+
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+
+  /* Layout */
+  --container-width: 1240px;
+  --transition: 0.25s ease;
+}

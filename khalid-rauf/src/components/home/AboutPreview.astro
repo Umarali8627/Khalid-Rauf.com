@@ -1,0 +1,57 @@
+---
+const features = [
+  { icon: 'writer', title: 'Writer', desc: 'Expressing ideas through poetry, prose and thought-provoking books.' },
+  { icon: 'thinker', title: 'Political Thinker', desc: 'Advocating for responsible governance, unity and economic prosperity.' },
+  { icon: 'book', title: 'Public Intellectual', desc: 'Exploring philosophy, religion and the human condition.' },
+  { icon: 'people', title: 'Community Leader', desc: 'Working for social harmony, education and community development.' },
+];
+
+const stats = [
+  { value: '12+', label: 'Books Published' },
+  { value: '30+', label: 'Years of Writing' },
+  { value: '100+', label: 'Poems Written' },
+  { value: 'Thousands', label: 'Readers Impacted' },
+];
+---
+
+<section class="section about-preview">
+  <div class="container about-preview__grid">
+    <img
+      src="/images/hero_image.jpg"
+      alt="Khalid Rauf Qureshi portrait"
+      class="about-preview__image"
+    />
+
+    <div>
+      <span class="eyebrow">About Khalid Rauf Qureshi</span>
+      <h2 class="section-heading__title--light">A Life of Words, Ideas, and Service</h2>
+      <p>
+        Khalid Rauf Qureshi is an author, poet, political thinker and
+        community leader whose work spans literature, politics, philosophy
+        and social thought.
+      </p>
+
+      <div class="about-preview__features">
+        {features.map((f) => (
+          <div class="about-preview__feature">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2z"></path>
+            </svg>
+            <h4>{f.title}</h4>
+            <p>{f.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="about-preview__stats">
+        {stats.map((s) => (
+          <div class="about-preview__feature">
+            <h4 style="font-family: var(--font-heading); font-size: 1.6rem;">{s.value}</h4>
+            <p>{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+

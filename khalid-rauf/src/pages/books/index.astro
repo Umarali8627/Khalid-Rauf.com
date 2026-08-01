@@ -1,0 +1,99 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PageHero from '../../components/ui/PageHero.astro';
+import Card from '../../components/ui/Card.astro';
+import Button from '../../components/ui/Button.astro';
+import { getAllBooks } from '../../services/books';
+import { decodeHtmlEntities, stripHtml, truncate } from '../../lib/helpers';
+import '../../styles/pages/books.css';
+
+const books = await getAllBooks();
+
+// Derive unique categories from the actual data (excluding the generic "Books" parent)
+const categoryMap = new Map<string, string>();
+books.forEach((book) => {
+  book.categories
+    .filter((c) => c.slug !== 'books')
+    .forEach((c) => categoryMap.set(c.slug, c.name));
+});
+const categories = Array.from(categoryMap, ([slug, name]) => ({ slug, name }));
+
+function renderStars(rating: number): string {
+  const rounded = Math.round(rating);
+  return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+}
+---
+
+<MainLayout
+  title="Books"
+  description="Explore the full collection of books by Khalid Rauf Qureshi — poetry, fiction, and non-fiction."
+>
+  <PageHero
+    eyebrow="The Library"
+    title="Books That Inspire"
+    description="A collection of poetry, prose, and thought exploring literature, philosophy, and the human condition."
+    breadcrumb="Books"
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="books-filter" id="booksFilter">
+        <button class="books-filter__btn active" data-filter="all">All Books</button>
+        {categories.map((cat) => (
+          <button class="books-filter__btn" data-filter={cat.slug}>{cat.name}</button>
+        ))}
+      </div>
+
+      <div class="grid grid-4" id="booksGrid">
+        {books.map((book) => (
+          <div
+            class="book-item"
+            data-categories={book.categories.map((c) => c.slug).join(',')}
+          >
+            <Card
+              href={`/books/${book.slug}`}
+              image={book.featuredImage}
+              imageAlt={decodeHtmlEntities(book.name)}
+              category={book.categories.find((c) => c.slug !== 'books')?.name ?? 'Book'}
+              title={decodeHtmlEntities(book.name)}
+              meta={truncate(stripHtml(book.shortDescription) || stripHtml(book.description), 70)}
+            >
+              <Fragment slot="rating">
+                <div class="card__rating">
+                  {renderStars(book.averageRating)}
+                  <span>({book.reviewCount})</span>
+                </div>
+              </Fragment>
+              <Button href={`/books/${book.slug}`} variant="secondary" size="sm" full>
+                {book.currencySymbol}{book.price} — {book.addToCartText}
+              </Button>
+            </Card>
+          </div>
+        ))}
+      </div>
+
+      {books.length === 0 && (
+        <p class="text-center">No books found. Publish products in WooCommerce to see them here.</p>
+      )}
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  const filterBtns = document.querySelectorAll('.books-filter__btn');
+  const items = document.querySelectorAll('.book-item');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = btn.getAttribute('data-filter');
+      items.forEach((item) => {
+        const cats = item.getAttribute('data-categories') || '';
+        const show = filter === 'all' || cats.split(',').includes(filter!);
+        (item as HTMLElement).style.display = show ? '' : 'none';
+      });
+    });
+  });
+</script>

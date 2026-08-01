@@ -1,0 +1,86 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Button from '../../components/ui/Button.astro';
+import { getAllBooks, getBookBySlug } from '../../services/books';
+import { decodeHtmlEntities } from '../../lib/helpers';
+import '../../styles/pages/books.css';
+
+// Static generation: builds one page per book at build time.
+// If your project uses SSR (output: 'server'), remove getStaticPaths
+// and instead read the slug via Astro.params.slug directly.
+export async function getStaticPaths() {
+  const books = await getAllBooks();
+  return books.map((book) => ({
+    params: { slug: book.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const book = await getBookBySlug(slug!);
+
+if (!book) {
+  return Astro.redirect('/books');
+}
+
+function renderStars(rating: number): string {
+  const rounded = Math.round(rating);
+  return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+}
+
+const decodedName = decodeHtmlEntities(book.name);
+const category = book.categories.find((c) => c.slug !== 'books');
+---
+
+<MainLayout title={decodedName} description={decodeHtmlEntities(book.shortDescription).slice(0, 155)}>
+  <section class="section">
+    <div class="container">
+      <p style="margin-bottom: var(--space-lg); font-size: 0.85rem; color: var(--color-text-muted);">
+        <a href="/" style="color: inherit;">Home</a> /
+        <a href="/books" style="color: inherit;">Books</a> /
+        <span style="color: var(--color-text-primary);">{decodedName}</span>
+      </p>
+
+      <div class="book-detail__grid">
+        <img
+          src={book.featuredImage}
+          alt={decodedName}
+          class="book-detail__image"
+          onerror="this.src='/placeholder-book.jpg'"
+        />
+
+        <div class="detail">
+          {category && <span class="book-detail__category">{category.name}</span>}
+          <h1 class="book-detail__title">{decodedName}</h1>
+
+          <div class="book-detail__rating">
+            {renderStars(book.averageRating)}
+            <span>{book.reviewCount} review{book.reviewCount !== 1 ? 's' : ''}</span>
+          </div>
+
+          {book.isPurchasable && (
+            <p class="book-detail__price">{book.currencySymbol}{book.price}</p>
+          )}
+
+          <div class="book-detail__actions">
+            <Button href={book.addToCartUrl} variant="primary">
+              {book.addToCartText}
+            </Button>
+          </div>
+
+          <div class="book-detail__meta">
+            <div class="book-detail__meta-item">
+              <h5>Availability</h5>
+              <p>{book.isInStock ? 'In Stock' : 'Out of Stock'}</p>
+            </div>
+            <div class="book-detail__meta-item">
+              <h5>Category</h5>
+              <p>{category?.name ?? 'General'}</p>
+            </div>
+          </div>
+
+          <div class="book-detail__description" set:html={book.description || book.shortDescription} />
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>

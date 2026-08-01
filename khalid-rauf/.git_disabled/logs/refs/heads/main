@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 11267936ff72ee332ced2a83d6a66dab91fc5aea Umar Ali <your_github_email@example.com> 1785343026 +0500	commit (initial): "Initial commit from Astro"
+11267936ff72ee332ced2a83d6a66dab91fc5aea 528b66b896551cf8d984f942723748f660c61d47 Umar Ali <your_github_email@example.com> 1785563414 +0500	commit: Intial commit
+528b66b896551cf8d984f942723748f660c61d47 528b66b896551cf8d984f942723748f660c61d47 Umar Ali <your_github_email@example.com> 1785563436 +0500	Branch: renamed refs/heads/master to refs/heads/main
+528b66b896551cf8d984f942723748f660c61d47 ccd28aa38920c3991964ccb894ea8f5933382dfa Umar Ali <your_github_email@example.com> 1785574401 +0500	commit: set the blog slug to the post title in the url and also set the og:image to the post image

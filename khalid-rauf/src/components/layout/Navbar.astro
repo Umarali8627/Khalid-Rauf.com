@@ -1,0 +1,62 @@
+---
+
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Books', href: '/books' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'About Khalid Rauf', href: '/about' },
+  { label: 'Campaign', href: '/campaign' },
+  { label: 'Contact', href: '/contact' },
+];
+
+const currentPath = Astro.url.pathname;
+
+const items = navItems.map((item) => ({
+  label: item.label,
+  href: item.href,
+  className: currentPath === item.href ? 'active' : '',
+}));
+---
+
+<header class="navbar">
+  <div class="navbar__inner">
+    <a href="/" class="navbar__logo">Khalid Rauf</a>
+
+    <nav class="navbar__links" id="navLinks">
+      {items.map((item) => (
+        <a href={item.href} class={item.className}>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="navbar__actions">
+      <div class="navbar__lang">
+        <a href="/" class="active">English</a>
+        <span class="navbar__lang-divider">/</span>
+        <a href="/ur">اردو</a>
+      </div>
+
+      <button class="navbar__search" aria-label="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
+    
+
+      <button class="navbar__toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('navToggle');
+  const links = document.getElementById('navLinks');
+  toggle?.addEventListener('click', () => {
+    links?.classList.toggle('is-open');
+  });
+</script>

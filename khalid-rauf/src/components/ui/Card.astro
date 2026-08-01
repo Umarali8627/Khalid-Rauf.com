@@ -1,0 +1,62 @@
+---
+export interface Props {
+  href?: string;
+  image?: string;
+  imageAlt?: string;
+  wideImage?: boolean;
+  category?: string;
+  title: string;
+  meta?: string;
+  class?: string;
+}
+
+const {
+  href,
+  image,
+  imageAlt = '',
+  wideImage = false,
+  category,
+  title,
+  meta,
+  class: className = '',
+} = Astro.props;
+
+const imageClass = wideImage ? 'card__image card__image--wide' : 'card__image';
+---
+
+<div class={`card ${className}`}>
+  {image && (
+    <div class={`card__image-wrap ${wideImage ? 'card__image-wrap--wide' : ''}`}>
+      <img
+        src={image}
+        alt={imageAlt}
+        class={imageClass}
+        loading="lazy"
+        onerror="this.closest('.card__image-wrap').classList.add('card__image-wrap--fallback'); this.style.display='none';"
+      />
+      <div class="card__image-fallback">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 4h16v16H4z" />
+          <path d="M4 15l4-4 4 4 4-6 4 6" />
+        </svg>
+        <span>Image unavailable</span>
+      </div>
+    </div>
+  )}
+
+  <div class="card__body">
+    {category && <p class="card__category">{category}</p>}
+
+    <h3 class="card__title">
+      {href ? <a href={href}>{title}</a> : title}
+    </h3>
+
+    {meta && <p class="card__meta">{meta}</p>}
+
+    <slot name="rating" />
+
+    <div class="card__footer">
+      <slot />
+    </div>
+  </div>
+</div>

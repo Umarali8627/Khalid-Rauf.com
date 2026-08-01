@@ -1,0 +1,72 @@
+---
+import Card from '../ui/Card.astro';
+import Button from '../ui/Button.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import { getBooks } from '../../services/books';
+import { decodeHtmlEntities, stripHtml, truncate } from '../../lib/helpers';
+
+const books = (await getBooks(6)).slice(2,6);
+
+function renderStars(rating: number): string {
+  const rounded = Math.round(rating);
+  return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+}
+---
+
+<section class="section">
+  <div class="container">
+    <SectionHeading eyebrow="Featured Books" title="Books That Inspire" />
+
+    <div class="grid grid-4">
+      {books.map((book) => (
+        <Card
+          href={`/books/${book.slug}`}
+          image={book.featuredImage}
+          imageAlt={decodeHtmlEntities(book.name)}
+          category={book.categories.find((c) => c.slug !== 'books')?.name ?? 'Book'}
+          title={decodeHtmlEntities(book.name)}
+          meta={truncate(stripHtml(book.shortDescription) || stripHtml(book.description), 70)}
+        >
+          <Fragment slot="rating">
+            <div class="card__rating">
+              {renderStars(book.averageRating)}
+              <span>({book.reviewCount})</span>
+            </div>
+          </Fragment>
+
+          {book.isPurchasable ? (
+            <Button href={`/books/${book.slug}`} variant="secondary" size="sm" full>
+              {book.currencySymbol}{book.price} — {book.addToCartText}
+            </Button>
+          ) : (
+            <Button href={book.addToCartUrl} variant="secondary" size="sm" full>
+              {book.addToCartText}
+            </Button>
+          )}
+        </Card>
+      ))}
+    </div>
+
+    {books.length === 0 && (
+      <p class="text-center">No books found yet. Add products in WordPress/WooCommerce to see them here.</p>
+    )}
+
+    {books.length > 0 && (
+      <div class="section__footer">
+        <Button href="/books" variant="primary">View all books →</Button>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .section__footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+    padding-bottom: 5%;
+  }
+  /* .grid grid-4 {
+    padding-left: 15%;
+  } */
+</style>

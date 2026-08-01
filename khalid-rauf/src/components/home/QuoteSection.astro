@@ -1,0 +1,22 @@
+---
+export interface Props {
+  quote?: string;
+  author?: string;
+}
+
+const {
+  quote = 'Words can shape thought, and thought can shape nations.',
+  author = 'Khalid Rauf Qureshi',
+} = Astro.props;
+---
+
+<section class="quote-section">
+  <div class="container">
+    <div class="quote-box">
+      <div class="quote-box__mark">“</div>
+      <p>{quote}</p>
+      <p class="quote-box__author">— {author}</p>
+    </div>
+  </div>
+</section>
+

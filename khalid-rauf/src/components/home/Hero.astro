@@ -1,0 +1,91 @@
+---
+import Button from '../ui/Button.astro';
+---
+
+<section class="hero">
+  <div class="hero__decoration" aria-hidden="true">
+    <svg viewBox="0 0 200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="heroLeafGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d4af37" />
+          <stop offset="100%" stop-color="#f5e6c8" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M100 10 C170 70 175 200 100 310 C25 200 30 70 100 10 Z"
+        stroke="url(#heroLeafGold)"
+        stroke-width="1.5"
+      />
+      <path d="M100 30 L100 290" stroke="url(#heroLeafGold)" stroke-width="1" />
+      <path d="M100 80 L60 55 M100 80 L140 55" stroke="url(#heroLeafGold)" stroke-width="0.75" />
+      <path d="M100 145 L50 115 M100 145 L150 115" stroke="url(#heroLeafGold)" stroke-width="0.75" />
+      <path d="M100 210 L55 180 M100 210 L145 180" stroke="url(#heroLeafGold)" stroke-width="0.75" />
+    </svg>
+  </div>
+
+  <div class="container hero__grid">
+    <div class="hero__content">
+      <span class="eyebrow">WRITER. POET. THINKER. LEADER.</span>
+      <h1>Khalid Rauf <br/>Qureshi</h1>
+      <p>
+        A voice for thought, a writer by passion, and a public figure by
+        purpose. Exploring the intersections of literature, politics,
+        philosophy, and society.
+      </p>
+      <div class="hero__actions">
+        <Button href="/books" variant="primary">
+          Explore Books
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M13 5l7 7-7 7"></path>
+          </svg>
+        </Button>
+        <Button href="/about" variant="secondary">About Me</Button>
+      </div>
+    </div>
+
+    <div class="hero__image-wrap">
+      <img
+        src="/images/main.png"
+        alt="Khalid Rauf Qureshi writing at his desk"
+        class="hero__image"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero__decoration {
+    position: absolute;
+    top: -30px;
+    left: -40px;
+    width: 280px;
+    height: 460px;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 0;
+    transform: rotate(-12deg);
+  }
+
+  .hero__decoration svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero__grid {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    .hero__decoration {
+      width: 180px;
+      height: 300px;
+      opacity: 0.15;
+    }
+  }
+</style>

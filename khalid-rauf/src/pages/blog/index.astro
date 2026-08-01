@@ -1,0 +1,69 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import PageHero from '../../components/ui/PageHero.astro';
+import Card from '../../components/ui/Card.astro';
+import { getPostsPaginated } from '../../services/posts';
+import { decodeHtmlEntities, formatDate, stripHtml, truncate } from '../../lib/helpers';
+import '../../styles/pages/blog.css';
+
+const pageParam = Astro.url.searchParams.get('page');
+const currentPage = pageParam ? Math.max(1, parseInt(pageParam)) : 1;
+
+const { posts, totalPages } = await getPostsPaginated(currentPage, 9);
+
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+<MainLayout
+  title="Blog"
+  description="Articles and essays by Khalid Rauf Qureshi on literature, politics, and society."
+>
+  <PageHero
+    eyebrow="Writings"
+    title="Latest Articles"
+    description="Thoughts on literature, politics, philosophy, and the fabric of society."
+    breadcrumb="Blog"
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-3">
+        {posts.map((post) => (
+          <Card
+            href={`/blog/${post.slug}`}
+            image={post.featuredImage}
+            imageAlt={post.featuredImageAlt || decodeHtmlEntities(post.title)}
+            wideImage
+            category={post.categories[0] ?? 'Article'}
+            title={decodeHtmlEntities(post.title)}
+            meta={formatDate(post.date)}
+          >
+            <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin: 0;">
+              {truncate(stripHtml(post.excerpt), 100)}
+            </p>
+          </Card>
+        ))}
+      </div>
+
+      {posts.length === 0 && (
+        <p class="text-center">No articles published yet.</p>
+      )}
+
+      {totalPages > 1 && (
+        <div class="pagination">
+          {currentPage > 1 && (
+            <a href={`/blog?page=${currentPage - 1}`}>‹</a>
+          )}
+          {pageNumbers.map((num) => (
+            num === currentPage
+              ? <span class="active">{num}</span>
+              : <a href={`/blog?page=${num}`}>{num}</a>
+          ))}
+          {currentPage < totalPages && (
+            <a href={`/blog?page=${currentPage + 1}`}>›</a>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>

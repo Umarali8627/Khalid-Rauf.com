@@ -1,0 +1,35 @@
+---
+export interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'gold' | 'ghost';
+  size?: 'md' | 'sm';
+  full?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  full = false,
+  type = 'button',
+  class: className = '',
+} = Astro.props;
+
+const classes = [
+  'btn',
+  `btn--${variant}`,
+  size === 'sm' ? 'btn--sm' : '',
+  full ? 'btn--full' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag class={classes} href={href} type={!href ? type : undefined}>
+  <slot />
+</Tag>

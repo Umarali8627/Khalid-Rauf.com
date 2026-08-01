@@ -1,0 +1,50 @@
+---
+import Card from '../ui/Card.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import { getPosts } from '../../services/posts';
+import { decodeHtmlEntities, formatDate } from '../../lib/helpers';
+import Button from '../ui/Button.astro';
+
+const posts = await getPosts(4);
+---
+
+<section class="section section-dark">
+  <div class="container">
+    <SectionHeading eyebrow="From the Blog" title="Latest Articles" light>
+     
+    </SectionHeading>
+
+    <div class="grid grid-4">
+      {posts.map((post) => (
+        <Card
+          href={`/blog/${post.slug}`}
+          image={post.featuredImage}
+          imageAlt={post.featuredImageAlt}
+          wideImage
+          category={post.categories[0] ?? 'Article'}
+          title={decodeHtmlEntities(post.title)}
+          meta={formatDate(post.date)}
+        />
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <p style="color: rgba(255,255,255,0.6); text-align: center;">
+        No articles published yet.
+      </p>
+    )}
+    {posts.length > 0 && (
+      <div class="section__footer">
+        <Button href="/blog" variant="primary">View all Articles →</Button>
+      </div>
+    )}
+  </div>
+</section>
+<style>
+  .section__footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+    padding-bottom: 5%;
+  }
+</style>
