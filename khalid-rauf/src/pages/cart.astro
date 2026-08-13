@@ -1,0 +1,108 @@
+---
+export const prerender = false; // needs to read live cart data per-request
+
+import MainLayout from '../layouts/MainLayout.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import '../styles/pages/checkout.css';
+---
+
+<MainLayout title="Your Cart" description="Review the items in your cart before checkout.">
+  <PageHero eyebrow="Shopping Cart" title="Your Cart" breadcrumb="Cart" />
+
+  <section class="section">
+    <div class="container">
+      <div id="cartContainer">
+        <p class="text-center">Loading your cart…</p>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  import { getCart, updateCartItem, removeCartItem } from '../lib/cart-client';
+
+  async function render() {
+    const container = document.getElementById('cartContainer')!;
+    const cart = await getCart();
+
+    if (!cart || cart.items.length === 0) {
+      container.innerHTML = `
+        <div class="cart-empty">
+          <p>Your cart is empty.</p>
+          <a href="/books" class="btn btn--primary" style="margin-top: 1rem;">Browse Books</a>
+        </div>
+      `;
+      return;
+    }
+
+    const itemsHtml = cart.items
+      .map((item) => {
+        const image = item.images?.[0]?.src ?? '/placeholder-book.jpg';
+        const minor = item.totals.currency_minor_unit ?? 2;
+        const lineTotal = (Number(item.totals.line_total) / 10 ** minor).toFixed(minor);
+
+        return `
+          <div class="cart-item" data-key="${item.key}">
+            <img src="${image}" alt="${item.name}" referrerpolicy="no-referrer" />
+            <div class="cart-item__info">
+              <h4>${item.name}</h4>
+              <div class="cart-item__qty">
+                <button data-action="decrease">−</button>
+                <input type="text" value="${item.quantity}" readonly />
+                <button data-action="increase">+</button>
+              </div>
+              <button class="cart-item__remove" data-action="remove">Remove</button>
+            </div>
+            <div>${item.totals.currency_symbol}${lineTotal}</div>
+          </div>
+        `;
+      })
+      .join('');
+
+    const minorTotal = cart.totals.currency_minor_unit ?? 2;
+    const total = (Number(cart.totals.total_price) / 10 ** minorTotal).toFixed(minorTotal);
+
+    container.innerHTML = `
+      <div class="checkout-grid">
+        <div>${itemsHtml}</div>
+        <div class="order-summary">
+          <div class="order-summary__row total">
+            <span>Total</span>
+            <span>${cart.totals.currency_symbol}${total}</span>
+          </div>
+          <a href="/checkout" class="btn btn--primary btn--full" style="margin-top: 1rem;">
+            Proceed to Checkout
+          </a>
+        </div>
+      </div>
+    `;
+
+    container.querySelectorAll('.cart-item').forEach((el) => {
+      const key = el.getAttribute('data-key')!;
+      const qtyInput = el.querySelector('input') as HTMLInputElement;
+
+      el.querySelector('[data-action="increase"]')?.addEventListener('click', async () => {
+        const newQty = Number(qtyInput.value) + 1;
+        await updateCartItem(key, newQty);
+        render();
+      });
+
+      el.querySelector('[data-action="decrease"]')?.addEventListener('click', async () => {
+        const newQty = Math.max(0, Number(qtyInput.value) - 1);
+        if (newQty === 0) {
+          await removeCartItem(key);
+        } else {
+          await updateCartItem(key, newQty);
+        }
+        render();
+      });
+
+      el.querySelector('[data-action="remove"]')?.addEventListener('click', async () => {
+        await removeCartItem(key);
+        render();
+      });
+    });
+  }
+
+  render();
+</script>

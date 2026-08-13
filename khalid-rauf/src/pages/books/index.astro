@@ -2,14 +2,13 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import Card from '../../components/ui/Card.astro';
-import Button from '../../components/ui/Button.astro';
+import CheckoutButtoon from '../../components/books/CheckoutButtoon.astro';
 import { getAllBooks } from '../../services/books';
 import { decodeHtmlEntities, stripHtml, truncate } from '../../lib/helpers';
 import '../../styles/pages/books.css';
 
 const books = await getAllBooks();
 
-// Derive unique categories from the actual data (excluding the generic "Books" parent)
 const categoryMap = new Map<string, string>();
 books.forEach((book) => {
   book.categories
@@ -64,9 +63,17 @@ function renderStars(rating: number): string {
                   <span>({book.reviewCount})</span>
                 </div>
               </Fragment>
-              <Button href={`/books/${book.slug}`} variant="secondary" size="sm" full>
-                {book.currencySymbol}{book.price} — {book.addToCartText}
-              </Button>
+
+              <CheckoutButtoon
+                productId={book.id}
+                isPurchasable={book.isPurchasable}
+                isInStock={book.isInStock}
+                price={book.price}
+                currencySymbol={book.currencySymbol}
+                readMoreUrl={`/books/${book.slug}`}
+                size="sm"
+                full
+              />
             </Card>
           </div>
         ))}

@@ -1,0 +1,85 @@
+---
+export interface Props {
+  productId: number;
+  isPurchasable: boolean;
+  isInStock: boolean;
+  price?: string;
+  currencySymbol?: string;
+  readMoreUrl: string;
+  size?: 'md' | 'sm';
+  full?: boolean;
+}
+
+const {
+  productId,
+  isPurchasable,
+  isInStock,
+  price,
+  currencySymbol,
+  readMoreUrl,
+  size = 'md',
+  full = false,
+} = Astro.props;
+
+const canBuy = isPurchasable && isInStock;
+const outOfStock = isPurchasable && !isInStock;
+
+const sizeClass = size === 'sm' ? 'btn--sm' : '';
+const fullClass = full ? 'btn--full' : '';
+
+const buyClasses = ['btn', 'btn--gold', sizeClass, fullClass].filter(Boolean).join(' ');
+const readMoreClasses = ['btn', 'btn--secondary', sizeClass, fullClass].filter(Boolean).join(' ');
+
+const showPrice = isPurchasable && price;
+const buyLabel = showPrice ? `Buy Now — ${currencySymbol}${price}` : 'Buy Now';
+---
+
+{canBuy && (
+  <button class={buyClasses} data-product-id={productId} data-buy-now>
+    <span class="buy-now__label">{buyLabel}</span>
+    <span class="buy-now__loading" hidden>Adding…</span>
+  </button>
+)}
+
+{outOfStock && (
+  <button class={buyClasses} disabled>
+    Out of Stock
+  </button>
+)}
+
+{!isPurchasable && (
+  <a href={readMoreUrl} class={readMoreClasses}>
+    Read More
+  </a>
+)}
+
+<script>
+  import { addToCart } from '../../lib/cart-client';
+
+  document.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+    const btn = target?.closest('[data-buy-now]') as HTMLButtonElement | null;
+    if (!btn) return;
+
+    const productId = Number(btn.dataset.productId);
+    if (!productId) return;
+
+    const label = btn.querySelector('.buy-now__label') as HTMLElement;
+    const loading = btn.querySelector('.buy-now__loading') as HTMLElement;
+
+    btn.disabled = true;
+    label.hidden = true;
+    loading.hidden = false;
+
+    const result = await addToCart(productId, 1);
+
+    if (result.success) {
+      window.location.href = '/checkout';
+    } else {
+      btn.disabled = false;
+      label.hidden = false;
+      loading.hidden = true;
+      alert(result.message || 'Could not add item to cart.');
+    }
+  });
+</script>

@@ -81,3 +81,12 @@ export function mapBook(raw: any): Book {
     addToCartUrl: raw.add_to_cart?.url ?? raw.permalink,
   };
 }
+/**
+ * Builds a direct "Buy Now" URL that adds the product to the WooCommerce
+ * cart and lands the user on checkout in one step — via WooCommerce's
+ * native ?add-to-cart= query param handling. No API calls, no CORS.
+ */
+export function buildCheckoutUrl(productId: number, siteUrl: string): string {
+  const base = siteUrl.replace(/\/$/, ''); // strip trailing slash if present
+  return `${base}/checkout/?add-to-cart=${productId}`;
+}

@@ -1,0 +1,127 @@
+---
+export interface Props {
+  productId: number;
+  isPurchasable: boolean;
+  isInStock: boolean;
+  addToCartText: string;
+  addToCartUrl: string;
+  price?: string;
+  currencySymbol?: string;
+  size?: 'md' | 'sm';
+  full?: boolean;
+}
+
+const {
+  productId,
+  isPurchasable,
+  isInStock,
+  addToCartText,
+  addToCartUrl,
+  price,
+  currencySymbol,
+  size = 'md',
+  full = false,
+} = Astro.props;
+
+const canBuyDirectly = isPurchasable && isInStock;
+const showPrice = isPurchasable && price;
+
+const sizeClass = size === 'sm' ? 'btn--sm' : '';
+const fullClass = full ? 'btn--full' : '';
+
+const buyButtonClasses = ['btn', 'btn--primary', 'buy-btn', sizeClass, fullClass]
+  .filter(Boolean)
+  .join(' ');
+
+const fallbackLinkClasses = ['btn', 'btn--secondary', sizeClass, fullClass]
+  .filter(Boolean)
+  .join(' ');
+
+const buyButtonLabel = showPrice ? `${currencySymbol}${price} — Buy Now` : 'Add to Cart';
+
+const isExternalLink = addToCartUrl.startsWith('http') && !addToCartUrl.includes('khalidrauf.com');
+const linkTarget = isExternalLink ? '_blank' : undefined;
+---
+
+<Fragment>
+  {canBuyDirectly && (
+    <button class={buyButtonClasses} data-product-id={productId} type="button">
+      <span class="buy-btn__label">{buyButtonLabel}</span>
+      <span class="buy-btn__loading" hidden>Adding…</span>
+    </button>
+  )}
+
+  {!canBuyDirectly && (
+    <a href={addToCartUrl} class={fallbackLinkClasses} target={linkTarget} rel="noopener noreferrer">
+      {addToCartText}
+    </a>
+  )}
+
+  <p class="buy-btn__status" data-status hidden></p>
+</Fragment>
+
+<style>
+  .buy-btn {
+    position: relative;
+  }
+  .buy-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .buy-btn__status {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+  }
+  .buy-btn__status.success {
+    background: rgba(63, 125, 77, 0.1);
+    color: var(--color-success);
+  }
+  .buy-btn__status.error {
+    background: rgba(198, 70, 70, 0.1);
+    color: var(--color-error);
+  }
+</style>
+
+<script>
+  import { addToCart, goToCart } from '../../lib/cart';
+
+  document.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+    const btn = target?.closest('.buy-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+
+    const productId = Number(btn.dataset.productId);
+    if (!productId) return;
+
+    const label = btn.querySelector('.buy-btn__label') as HTMLElement;
+    const loading = btn.querySelector('.buy-btn__loading') as HTMLElement;
+    const status = btn.parentElement?.querySelector('[data-status]') as HTMLElement | null;
+
+    btn.disabled = true;
+    label.hidden = true;
+    loading.hidden = false;
+    if (status) status.hidden = true;
+
+    const result = await addToCart(productId, 1);
+
+    btn.disabled = false;
+    label.hidden = false;
+    loading.hidden = true;
+
+    if (status) {
+      status.hidden = false;
+      status.textContent = result.success
+        ? 'Added to cart! Redirecting to checkout…'
+        : result.message || 'Something went wrong.';
+      status.className = result.success
+        ? 'buy-btn__status success'
+        : 'buy-btn__status error';
+    }
+
+    if (result.success) {
+      setTimeout(() => goToCart(), 900);
+    }
+  });
+</script>

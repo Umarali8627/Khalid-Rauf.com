@@ -1,13 +1,10 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import Button from '../../components/ui/Button.astro';
+import CheckoutButtoon from '../../components/books/CheckoutButtoon.astro';
 import { getAllBooks, getBookBySlug } from '../../services/books';
 import { decodeHtmlEntities } from '../../lib/helpers';
 import '../../styles/pages/books.css';
 
-// Static generation: builds one page per book at build time.
-// If your project uses SSR (output: 'server'), remove getStaticPaths
-// and instead read the slug via Astro.params.slug directly.
 export async function getStaticPaths() {
   const books = await getAllBooks();
   return books.map((book) => ({
@@ -45,10 +42,11 @@ const category = book.categories.find((c) => c.slug !== 'books');
           src={book.featuredImage}
           alt={decodedName}
           class="book-detail__image"
+          referrerpolicy="no-referrer"
           onerror="this.src='/placeholder-book.jpg'"
         />
 
-        <div class="detail">
+        <div>
           {category && <span class="book-detail__category">{category.name}</span>}
           <h1 class="book-detail__title">{decodedName}</h1>
 
@@ -62,9 +60,14 @@ const category = book.categories.find((c) => c.slug !== 'books');
           )}
 
           <div class="book-detail__actions">
-            <Button href={book.addToCartUrl} variant="primary">
-              {book.addToCartText}
-            </Button>
+            <CheckoutButtoon
+              productId={book.id}
+              isPurchasable={book.isPurchasable}
+              isInStock={book.isInStock}
+              price={book.price}
+              currencySymbol={book.currencySymbol}
+              readMoreUrl={book.addToCartUrl}
+            />
           </div>
 
           <div class="book-detail__meta">
