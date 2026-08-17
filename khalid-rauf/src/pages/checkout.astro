@@ -19,7 +19,7 @@ import '../styles/pages/checkout.css';
 </MainLayout>
 
 <script>
-  import { getCart, selectShippingRate, submitCheckout } from '../lib/cart-client';
+  import { getCart, selectShippingRate, submitCheckout, updateCartItem, removeCartItem } from '../lib/cart-client';
 
   const countries = [
     { code: 'US', name: 'United States' },
@@ -28,6 +28,37 @@ import '../styles/pages/checkout.css';
     { code: 'PK', name: 'Pakistan' },
     { code: 'AE', name: 'United Arab Emirates' },
   ];
+
+  // WooCommerce validates 'state' against these ISO subdivision codes
+  // when the selected country has defined states. Countries not listed
+  // here (e.g. GB, AE) don't require a coded state — free text is fine.
+  const statesByCountry: Record<string, { code: string; name: string }[]> = {
+    US: [
+      { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+      { code: 'AZ', name: 'Arizona' }, { code: 'CA', name: 'California' },
+      { code: 'CO', name: 'Colorado' }, { code: 'FL', name: 'Florida' },
+      { code: 'GA', name: 'Georgia' }, { code: 'IL', name: 'Illinois' },
+      { code: 'NY', name: 'New York' }, { code: 'TX', name: 'Texas' },
+      { code: 'WA', name: 'Washington' },
+      // add more as needed
+    ],
+    CA: [
+      { code: 'AB', name: 'Alberta' }, { code: 'BC', name: 'British Columbia' },
+      { code: 'MB', name: 'Manitoba' }, { code: 'ON', name: 'Ontario' },
+      { code: 'QC', name: 'Quebec' },
+      // add more as needed
+    ],
+    PK: [
+      { code: 'JK', name: 'Azad Kashmir' },
+      { code: 'BA', name: 'Balochistan' },
+      { code: 'TA', name: 'FATA' },
+      { code: 'GB', name: 'Gilgit Baltistan' },
+      { code: 'IS', name: 'Islamabad Capital Territory' },
+      { code: 'KP', name: 'Khyber Pakhtunkhwa' },
+      { code: 'PB', name: 'Punjab' },
+      { code: 'SD', name: 'Sindh' },
+    ],
+  };
 
   async function render() {
     const container = document.getElementById('checkoutContainer')!;
@@ -63,13 +94,22 @@ import '../styles/pages/checkout.css';
     const itemsHtml = cart.items
       .map((item) => {
         const image = item.images?.[0]?.src ?? '/placeholder-book.jpg';
+        const minor = item.totals.currency_minor_unit ?? 2;
+        const lineTotal = (Number(item.totals.line_total) / 10 ** minor).toFixed(minor);
+
         return `
-          <div class="order-summary__item">
+          <div class="order-summary__item" data-key="${item.key}">
             <img src="${image}" alt="${item.name}" referrerpolicy="no-referrer" />
             <div class="order-summary__item-info">
               <h5>${item.name}</h5>
-              <p>Qty: ${item.quantity}</p>
+              <div class="order-summary__qty">
+                <button type="button" data-action="decrease">−</button>
+                <span data-qty-display>${item.quantity}</span>
+                <button type="button" data-action="increase">+</button>
+              </div>
+              <button type="button" class="order-summary__remove" data-action="remove">Remove</button>
             </div>
+            <div class="order-summary__item-price">${item.totals.currency_symbol}${lineTotal}</div>
           </div>
         `;
       })
@@ -109,7 +149,10 @@ import '../styles/pages/checkout.css';
               </div>
               <div class="form-group">
                 <label>State / Province</label>
-                <input type="text" name="state" required />
+                <select name="state" id="stateSelect" required>
+                  <option value="">Select a state/province</option>
+                </select>
+                <input type="text" name="state_text" id="stateText" placeholder="State / Province" style="display:none; margin-top: 6px;" />
               </div>
             </div>
             <div class="form-row">
@@ -119,7 +162,7 @@ import '../styles/pages/checkout.css';
               </div>
               <div class="form-group">
                 <label>Country</label>
-                <select name="country" required>${countryOptions}</select>
+                <select name="country" id="countrySelect" required>${countryOptions}</select>
               </div>
             </div>
             <div class="form-group">
@@ -154,10 +197,10 @@ import '../styles/pages/checkout.css';
 
         <div class="order-summary">
           <h3 style="margin-bottom: 1rem;">Order Summary</h3>
-          ${itemsHtml}
+          <div id="orderItems">${itemsHtml}</div>
           <div class="order-summary__row total">
             <span>Total</span>
-            <span>${cart.totals.currency_symbol}${total}</span>
+            <span id="orderTotal">${cart.totals.currency_symbol}${total}</span>
           </div>
           <button type="submit" class="btn btn--gold btn--full" style="margin-top: 1rem;" id="checkoutSubmit">
             Place Order
@@ -167,7 +210,78 @@ import '../styles/pages/checkout.css';
       </form>
     `;
 
-    // Shipping rate selection
+    attachCountryStateLogic();
+    attachOrderSummaryListeners();
+    attachShippingListeners();
+    attachPaymentListeners();
+    attachSubmitListener();
+  }
+
+  function attachCountryStateLogic() {
+    const countrySelect = document.getElementById('countrySelect') as HTMLSelectElement;
+    const stateSelect = document.getElementById('stateSelect') as HTMLSelectElement;
+    const stateText = document.getElementById('stateText') as HTMLInputElement;
+
+    function updateStates() {
+      const country = countrySelect.value;
+      const states = statesByCountry[country];
+
+      if (states && states.length > 0) {
+        stateSelect.innerHTML =
+          '<option value="">Select a state/province</option>' +
+          states.map((s) => `<option value="${s.code}">${s.name}</option>`).join('');
+        stateSelect.style.display = '';
+        stateSelect.setAttribute('name', 'state');
+        stateSelect.required = true;
+
+        stateText.style.display = 'none';
+        stateText.removeAttribute('name');
+        stateText.required = false;
+      } else {
+        // Country has no coded states in WooCommerce — allow free text instead
+        stateSelect.style.display = 'none';
+        stateSelect.removeAttribute('name');
+        stateSelect.required = false;
+
+        stateText.style.display = '';
+        stateText.setAttribute('name', 'state');
+        stateText.required = true;
+      }
+    }
+
+    countrySelect.addEventListener('change', updateStates);
+    updateStates(); // run once on initial render for the default country
+  }
+
+  function attachOrderSummaryListeners() {
+    document.querySelectorAll('.order-summary__item').forEach((el) => {
+      const key = el.getAttribute('data-key')!;
+      const qtyDisplay = el.querySelector('[data-qty-display]') as HTMLElement;
+
+      el.querySelector('[data-action="increase"]')?.addEventListener('click', async () => {
+        const newQty = Number(qtyDisplay.textContent) + 1;
+        await updateCartItem(key, newQty);
+        render();
+      });
+
+      el.querySelector('[data-action="decrease"]')?.addEventListener('click', async () => {
+        const newQty = Math.max(0, Number(qtyDisplay.textContent) - 1);
+        if (newQty === 0) {
+          await removeCartItem(key);
+        } else {
+          await updateCartItem(key, newQty);
+        }
+        render();
+      });
+
+      el.querySelector('[data-action="remove"]')?.addEventListener('click', async () => {
+        await removeCartItem(key);
+        render();
+      });
+    });
+  }
+
+  function attachShippingListeners() {
     document.querySelectorAll('.shipping-option').forEach((el) => {
       el.addEventListener('click', async () => {
         const rateId = el.getAttribute('data-rate-id')!;
@@ -176,8 +290,9 @@ import '../styles/pages/checkout.css';
         await selectShippingRate(0, rateId);
       });
     });
+  }
 
-    // Payment method selection — updates button label and visual state
+  function attachPaymentListeners() {
     const submitBtn = document.getElementById('checkoutSubmit') as HTMLButtonElement;
 
     document.querySelectorAll('.payment-option').forEach((el) => {
@@ -192,8 +307,11 @@ import '../styles/pages/checkout.css';
         submitBtn.textContent = method === 'paypal' ? 'Continue to PayPal' : 'Place Order';
       });
     });
+  }
 
+  function attachSubmitListener() {
     const form = document.getElementById('checkoutForm') as HTMLFormElement;
+    const submitBtn = document.getElementById('checkoutSubmit') as HTMLButtonElement;
     const errorEl = document.getElementById('checkoutError') as HTMLElement;
 
     form.addEventListener('submit', async (e) => {
@@ -207,24 +325,26 @@ import '../styles/pages/checkout.css';
       const paymentMethod = formData.get('payment_method') as 'paypal' | 'cod';
 
       const address = {
-        first_name: formData.get('first_name') as string,
-        last_name: formData.get('last_name') as string,
-        address_1: formData.get('address_1') as string,
-        city: formData.get('city') as string,
-        state: formData.get('state') as string,
-        postcode: formData.get('postcode') as string,
-        country: formData.get('country') as string,
-        email: formData.get('email') as string,
-        phone: formData.get('phone') as string,
+        first_name: (formData.get('first_name') as string) || '',
+        last_name: (formData.get('last_name') as string) || '',
+        company: '',
+        address_1: (formData.get('address_1') as string) || '',
+        address_2: '',
+        city: (formData.get('city') as string) || '',
+        state: (formData.get('state') as string) || '',
+        postcode: (formData.get('postcode') as string) || '',
+        country: (formData.get('country') as string) || '',
+        email: (formData.get('email') as string) || '',
+        phone: (formData.get('phone') as string) || '',
       };
+
+      console.log('[checkout] Submitting address:', address); // TEMP DEBUG — remove once confirmed working
 
       const result = await submitCheckout(address, address, paymentMethod);
 
       if (result.success && paymentMethod === 'paypal' && result.redirectUrl) {
-        // PayPal: send the user off-site to complete payment
         window.location.href = result.redirectUrl;
       } else if (result.success && paymentMethod === 'cod') {
-        // COD: order is placed immediately, no redirect needed — go to a thank-you page
         window.location.href = `/order-confirmation?order=${result.orderId ?? ''}`;
       } else {
         submitBtn.disabled = false;
@@ -233,7 +353,6 @@ import '../styles/pages/checkout.css';
       }
     });
   }
-  
 
   render();
 </script>

@@ -1,27 +1,35 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Button from '../components/ui/Button.astro';
+import '../styles/pages/confirmation.css';
 
 const orderId = Astro.url.searchParams.get('order');
+const hasOrderId = orderId && orderId.trim().length > 0;
 ---
 
 <MainLayout title="Order Confirmed" description="Your order has been placed successfully.">
   <section class="section">
-    <div class="container text-center" style="max-width: 560px;">
-      <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--color-bg-secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2">
-          <path d="M20 6L9 17l-5-5"></path>
-        </svg>
+    <div class="container">
+      <div class="confirmation">
+        <div class="confirmation__icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+        </div>
+
+        <h1>Order Placed Successfully</h1>
+
+        <p>
+          Thank you for your order
+          {hasOrderId && (
+            <Fragment> — your order number is <span class="confirmation__order-id">#{orderId}</span></Fragment>
+          )}.
+          You'll receive a confirmation email shortly, and your books will be
+          shipped to your address. You can pay in cash when your order arrives.
+        </p>
+
+        <Button href="/books" variant="primary">Continue Browsing</Button>
       </div>
-
-      <h1>Order Placed Successfully</h1>
-      <p style="margin-bottom: var(--space-lg);">
-        Thank you for your order{orderId ? ` — your order number is #${orderId}` : ''}.
-        You'll receive a confirmation email shortly, and your books will be
-        shipped to your address. You can pay in cash when your order arrives.
-      </p>
-
-      <Button href="/books" variant="primary">Continue Browsing</Button>
     </div>
   </section>
 </MainLayout>

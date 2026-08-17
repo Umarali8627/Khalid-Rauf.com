@@ -113,13 +113,14 @@ interface Address {
 export async function submitCheckout(
   billingAddress: Address,
   shippingAddress: Address,
+  paymentMethod: 'paypal' | 'cod',
   note = ''
-): Promise<{ success: boolean; redirectUrl?: string; message?: string }> {
+): Promise<{ success: boolean; redirectUrl?: string; orderId?: number; message?: string }> {
   try {
     const res = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ billingAddress, shippingAddress, note }),
+      body: JSON.stringify({ billingAddress, shippingAddress, paymentMethod, note }),
     });
 
     const data = await res.json();
@@ -128,10 +129,12 @@ export async function submitCheckout(
       return { success: false, message: data?.message || 'Checkout failed. Please check your details.' };
     }
 
-    // PayPal (and other redirect-based gateways) return a redirect_url here
     const redirectUrl = data?.payment_result?.redirect_url;
+    const orderId = data?.order_id;
 
-    return { success: true, redirectUrl };
+    console.log('[cart-client] Checkout response:', data); // TEMP DEBUG — check what WooCommerce actually returns
+
+    return { success: true, redirectUrl, orderId };
   } catch (err) {
     console.error('[cart-client] submitCheckout failed:', err);
     return { success: false, message: 'Network error during checkout.' };
